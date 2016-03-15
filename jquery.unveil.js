@@ -45,12 +45,34 @@
       images = images.not(loaded);
     }
 
-    $w.on("scroll.unveil resize.unveil lookup.unveil", unveil);
+    // Optimization for scroll and resize events.
+    // @see http://bencentra.com/code/2015/02/27/optimizing-window-resize.html
+    var delay = 100,
+        throttled = false;
+    function throttledUnveil() {
+      // Only run if we're not throttled.
+      if (!throttled) {
+        unveil();
+        throttled = true;
+        // Set a timeout to un-throttle.
+        setTimeout(function() {
+          throttled = false;
+        }, delay);
+      }
+    }
+
+    window.addEventListener('scroll', function() {
+      throttledUnveil();
+    });
+    window.addEventListener('resize', function() {
+      throttledUnveil();
+    });
+
+    $w.on('lookup.unveil', unveil);
 
     unveil();
 
     return this;
-
   };
 
 })(window.jQuery || window.Zepto);
